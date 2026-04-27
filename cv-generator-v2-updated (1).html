@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV.Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{
+  --accent:#1a3c6e;--accent2:#c8a96e;--light:#eef2f8;
+  --bg:#f0ede8;--panel:#fff;--border:#e0dbd3;
+  --text:#1c1b18;--muted:#7a7568;
+  --sw:260px;--pw:290px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);}
+
+/* APP GRID */
+.app{display:grid;grid-template-columns:var(--sw) 1fr var(--pw);grid-template-rows:48px 1fr;height:100vh;}
+
+/* TOPBAR */
+.topbar{grid-column:1/-1;background:var(--accent);display:flex;align-items:center;padding:0 14px;gap:6px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.logo{font-family:'Playfair Display',serif;font-size:17px;color:#fff;font-weight:600;padding-right:16px;border-right:1px solid rgba(255,255,255,0.2);margin-right:10px;flex-shrink:0;}
+.logo span{color:var(--accent2);}
+.tbar-label{font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:0.06em;text-transform:uppercase;margin-left:4px;}
+.swatch{width:19px;height:19px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s;flex-shrink:0;}
+.swatch.on,.swatch:hover{border-color:#fff;}
+.tgap{flex:1;}
+.tbtn{padding:5px 13px;font-size:11px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;border:1px solid rgba(255,255,255,0.22);background:transparent;color:rgba(255,255,255,0.82);transition:background .15s;}
+.tbtn:hover{background:rgba(255,255,255,0.14);}
+.tbtn.primary{background:var(--accent2);color:#1a3c6e;border-color:var(--accent2);font-weight:500;}
+.tbtn.primary:hover{background:#d4b87a;}
+
+/* SIDEBAR */
+.sidebar{background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.sb-head{padding:11px 13px 7px;font-size:10px;font-weight:500;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid var(--border);}
+.sb-scroll{overflow-y:auto;flex:1;padding:8px;}
+.sb-cat{font-size:10px;color:var(--muted);font-weight:500;padding:8px 6px 4px;letter-spacing:0.06em;text-transform:uppercase;}
+.bitem{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:7px;cursor:grab;font-size:12px;color:var(--text);border:1px solid transparent;transition:background .12s,border-color .12s;margin-bottom:2px;user-select:none;}
+.bitem:hover{background:var(--bg);border-color:var(--border);}
+.bitem:active{cursor:grabbing;opacity:0.7;}
+.bico{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+
+/* CANVAS */
+.canvas-wrap{background:#ccc9c3;display:flex;flex-direction:column;overflow:hidden;}
+.ctoolbar{display:flex;align-items:center;gap:5px;padding:6px 11px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;}
+.ctbtn{padding:3px 9px;font-size:11px;border-radius:5px;cursor:pointer;border:1px solid var(--border);background:var(--panel);color:var(--text);transition:background .12s;font-family:'DM Sans',sans-serif;}
+.ctbtn:hover{background:var(--bg);}
+.ctbtn.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+.ctsep{width:1px;height:15px;background:var(--border);margin:0 2px;}
+.cscroll{flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:28px;}
+
+/* CV PAPER */
+.cv-paper{width:794px;min-height:1123px;background:white;box-shadow:0 4px 36px rgba(0,0,0,0.2);position:relative;flex-shrink:0;transform-origin:top center;}
+
+/* CV LAYOUTS */
+.layout-classic .cv-header{background:var(--ca,#1a3c6e);color:#fff;padding:36px 44px 28px;}
+.layout-classic .cv-body{display:grid;grid-template-columns:210px 1fr;min-height:900px;}
+.layout-classic .cv-left{background:var(--cl,#eef2f8);padding:24px 18px;}
+.layout-classic .cv-right{padding:24px 30px;}
+
+.layout-minimal .cv-header{padding:36px 44px 20px;border-bottom:2px solid var(--ca,#1a3c6e);}
+.layout-minimal .cv-body{display:grid;grid-template-columns:190px 1fr;min-height:900px;}
+.layout-minimal .cv-left{padding:24px 18px;border-right:1px solid #eee;}
+.layout-minimal .cv-right{padding:24px 30px;}
+
+.layout-bold .cv-header{background:var(--ca,#1a3c6e);color:#fff;padding:0;display:flex;}
+.layout-bold .cv-hl{padding:32px 32px 28px;flex:1;}
+.layout-bold .cv-hr{width:200px;background:rgba(0,0,0,0.18);padding:32px 16px 28px;display:flex;flex-direction:column;gap:4px;font-size:11px;}
+.layout-bold .cv-body{display:grid;grid-template-columns:1fr;}
+.layout-bold .cv-left{display:none;}
+.layout-bold .cv-right{padding:24px 44px;}
+
+.layout-right .cv-header{background:var(--ca,#1a3c6e);color:#fff;padding:36px 44px 28px;}
+.layout-right .cv-body{display:grid;grid-template-columns:1fr 200px;min-height:900px;}
+.layout-right .cv-right{padding:24px 30px;}
+.layout-right .cv-left{background:var(--cl,#eef2f8);padding:24px 16px;border-left:none;}
+
+/* CV TYPOGRAPHY */
+.cv-name{font-family:var(--cf,'Playfair Display',serif);font-size:30px;font-weight:600;line-height:1.1;margin-bottom:5px;}
+.cv-jobtitle{font-size:13px;opacity:0.8;margin-bottom:12px;letter-spacing:0.03em;}
+.cv-contacts{display:flex;flex-wrap:wrap;gap:5px 14px;font-size:11px;opacity:0.85;}
+.cv-ci{display:flex;align-items:center;gap:4px;}
+.cv-ci a{color:inherit;text-decoration:none;}
+.cv-ci a:hover{text-decoration:underline;}
+.cv-photo{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,0.4);flex-shrink:0;}
+.cv-photo-rect{width:80px;height:80px;border-radius:6px;object-fit:cover;border:3px solid rgba(255,255,255,0.3);flex-shrink:0;}
+
+.cv-sec-title{font-size:8.5px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ca,#1a3c6e);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--ca,#1a3c6e);}
+.cv-sec-title.muted{border-color:rgba(26,60,110,0.2);}
+
+.cv-section{margin-bottom:18px;}
+
+/* experience */
+.cv-exp{margin-bottom:12px;}
+.cv-exp-hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1px;}
+.cv-exp-role{font-size:12.5px;font-weight:500;}
+.cv-exp-date{font-size:10px;color:#888;white-space:nowrap;margin-left:6px;}
+.cv-exp-co{font-size:11px;color:var(--ca,#1a3c6e);font-style:italic;margin-bottom:3px;}
+.cv-exp-desc{font-size:10.5px;color:#555;line-height:1.6;}
+.cv-tags{display:flex;flex-wrap:wrap;gap:2px;margin-top:4px;}
+.cv-tag{font-size:8.5px;padding:1px 6px;border-radius:9px;background:var(--cl,#eef2f8);color:var(--ca,#1a3c6e);border:1px solid rgba(26,60,110,0.12);}
+
+/* skills */
+.cv-skill{margin-bottom:6px;}
+.cv-skill-row{display:flex;justify-content:space-between;margin-bottom:2px;font-size:11px;}
+.cv-bar{height:3px;background:#e0e0e0;border-radius:2px;}
+.cv-bar-fill{height:3px;border-radius:2px;background:var(--ca,#1a3c6e);}
+
+/* languages */
+.cv-lang-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;font-size:11px;}
+.cv-dots{display:flex;gap:3px;}
+.cv-dot{width:7px;height:7px;border-radius:50%;background:#ddd;}
+.cv-dot.on{background:var(--ca,#1a3c6e);}
+
+/* education */
+.cv-edu{margin-bottom:9px;}
+.cv-edu-degree{font-size:12px;font-weight:500;}
+.cv-edu-school{font-size:10.5px;color:var(--ca,#1a3c6e);font-style:italic;}
+.cv-edu-year{font-size:10px;color:#888;}
+
+/* certs */
+.cv-cert{display:flex;align-items:center;gap:7px;margin-bottom:6px;font-size:11px;}
+.cv-cert-badge{width:20px;height:20px;border-radius:4px;background:var(--ca,#1a3c6e);color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;}
+
+/* achievements */
+.cv-ach{display:flex;gap:7px;margin-bottom:6px;align-items:flex-start;font-size:10.5px;line-height:1.55;}
+.cv-ach-bullet{color:var(--ca,#1a3c6e);flex-shrink:0;margin-top:1px;font-size:12px;}
+
+/* about */
+.cv-about{font-size:11px;line-height:1.7;color:#444;}
+
+/* text block */
+.cv-textblock{font-size:10.5px;line-height:1.7;color:#333;white-space:pre-wrap;word-break:break-word;}
+
+/* signature */
+.cv-signature{height:60px;border-top:1px solid #ddd;margin-top:12px;padding-top:8px;}
+.cv-sig-img{max-height:50px;max-width:200px;}
+
+/* signature canvas modal */
+.sig-canvas-wrap{border:1px solid var(--border);border-radius:8px;background:#fafafa;padding:8px;margin:8px 0;}
+.sig-canvas{display:block;border:1px solid #ddd;border-radius:6px;background:white;cursor:crosshair;}
+.sig-btns{display:flex;gap:6px;margin-top:6px;}
+.sig-btn{flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);cursor:pointer;font-size:11px;color:var(--text);}
+.sig-btn:hover{border-color:var(--accent);color:var(--accent);}
+.sig-btn.primary{background:var(--accent);color:white;border-color:var(--accent);}
+
+/* social links in header */
+.cv-social{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:8px;font-size:10.5px;opacity:0.8;}
+.cv-social a{color:inherit;text-decoration:none;display:flex;align-items:center;gap:4px;}
+.cv-social a:hover{opacity:0.7;}
+
+/* BLOCK DRAG PLACEHOLDER */
+.drop-zone{border:2px dashed var(--ca,#1a3c6e);border-radius:4px;height:36px;margin:4px 0;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ca,#1a3c6e);opacity:0;transition:opacity .2s;background:rgba(26,60,110,0.03);}
+.drop-zone.visible{opacity:1;}
+.cv-section-wrapper{position:relative;}
+.cv-section-wrapper:hover .sec-handle{opacity:1;}
+.sec-handle{position:absolute;left:-20px;top:4px;opacity:0;transition:opacity .2s;cursor:grab;color:var(--muted);font-size:12px;padding:2px 4px;}
+
+/* PROPS PANEL */
+.props{background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.ptabs{display:flex;border-bottom:1px solid var(--border);}
+.ptab{flex:1;padding:9px 4px;font-size:11px;text-align:center;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:color .15s;}
+.ptab.on{color:var(--accent);border-bottom-color:var(--accent);}
+.pbody{padding:12px;flex:1;overflow-y:auto;}
+
+/* form elements */
+.plabel{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;display:block;}
+.pgroup{margin-bottom:16px;}
+.pinput{width:100%;padding:5px 8px;border-radius:6px;border:1px solid var(--border);font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s;}
+.pinput:focus{border-color:var(--accent);}
+.ptextarea{width:100%;padding:5px 8px;border-radius:6px;border:1px solid var(--border);font-size:11px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--bg);outline:none;resize:vertical;min-height:55px;transition:border-color .15s;}
+.ptextarea:focus{border-color:var(--accent);}
+
+/* cards in props */
+.pcard{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:9px 10px;margin-bottom:6px;position:relative;}
+.pcard-title{font-size:12px;font-weight:500;margin-bottom:2px;}
+.pcard-sub{font-size:10px;color:var(--muted);}
+.pcard-actions{position:absolute;top:7px;right:8px;display:flex;gap:4px;}
+.pca-btn{font-size:11px;cursor:pointer;color:var(--muted);border:none;background:none;padding:2px 4px;border-radius:4px;transition:color .15s;}
+.pca-btn:hover{color:var(--accent);}
+.pca-btn.del:hover{color:#c0392b;}
+.add-btn{width:100%;padding:7px;border-radius:6px;border:1px dashed var(--border);background:transparent;cursor:pointer;font-size:11px;color:var(--muted);transition:all .15s;font-family:'DM Sans',sans-serif;margin-top:2px;}
+.add-btn:hover{border-color:var(--accent);color:var(--accent);background:#eef2f8;}
+
+/* color grid */
+.cgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:6px;}
+.csw{width:100%;aspect-ratio:1;border-radius:5px;cursor:pointer;border:2px solid transparent;transition:border-color .15s;}
+.csw.on,.csw:hover{border-color:var(--text);}
+
+/* font opts */
+.fopt{padding:6px 9px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12.5px;background:var(--bg);color:var(--text);margin-bottom:4px;transition:border-color .15s;}
+.fopt:hover,.fopt.on{border-color:var(--accent);color:var(--accent);}
+
+/* layout thumbs */
+.lgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px;}
+.lthumb{border-radius:6px;border:1.5px solid var(--border);cursor:pointer;overflow:hidden;aspect-ratio:3/4;display:flex;flex-direction:column;transition:border-color .15s;}
+.lthumb.on,.lthumb:hover{border-color:var(--accent);}
+
+/* toggle */
+.tog-row{display:flex;align-items:center;justify-content:space-between;padding:5px 9px;border-radius:6px;border:1px solid var(--border);background:var(--bg);font-size:11.5px;margin-bottom:4px;}
+.toggle{width:28px;height:15px;border-radius:8px;background:#ddd;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--accent);}
+.toggle::after{content:'';position:absolute;width:11px;height:11px;border-radius:50%;background:white;top:2px;left:2px;transition:left .2s;}
+.toggle.on::after{left:15px;}
+
+/* range */
+.rrow{display:flex;align-items:center;gap:8px;}
+.rrow input{flex:1;}
+.rval{font-size:11px;min-width:32px;text-align:right;color:var(--muted);}
+
+/* export btns */
+.ebtn{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:7px;border:1px solid var(--border);background:var(--bg);cursor:pointer;font-size:11.5px;font-family:'DM Sans',sans-serif;color:var(--text);transition:all .15s;width:100%;margin-bottom:6px;}
+.ebtn:hover{border-color:var(--accent);background:#eef2f8;color:var(--accent);}
+.ebtn-ico{font-size:17px;}
+
+/* photo upload */
+.photo-upload-area{width:100%;border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:border-color .15s;background:var(--bg);}
+.photo-upload-area:hover{border-color:var(--accent);}
+.photo-preview{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--border);margin:0 auto 6px;display:block;}
+.photo-upload-text{font-size:11px;color:var(--muted);}
+
+/* modal overlay for edit */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;display:flex;align-items:center;justify-content:center;}
+.modal{background:var(--panel);border-radius:10px;padding:22px;width:460px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.2);}
+.modal-title{font-size:15px;font-weight:500;margin-bottom:16px;font-family:'Playfair Display',serif;}
+.modal-row{margin-bottom:10px;}
+.modal-label{font-size:10px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px;display:block;}
+.modal-input{width:100%;padding:6px 8px;border-radius:6px;border:1px solid var(--border);font-size:12px;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);outline:none;}
+.modal-input:focus{border-color:var(--accent);}
+.modal-textarea{width:100%;padding:6px 8px;border-radius:6px;border:1px solid var(--border);font-size:11px;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);outline:none;resize:vertical;min-height:60px;}
+.modal-textarea:focus{border-color:var(--accent);}
+.modal-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+.mbtn{padding:7px 16px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;border:1px solid var(--border);background:var(--bg);color:var(--text);}
+.mbtn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.mbtn:hover{opacity:0.85;}
+
+/* skill stars editor */
+.star-row{display:flex;gap:4px;align-items:center;}
+.star{width:18px;height:18px;cursor:pointer;color:#ddd;font-size:16px;transition:color .12s;}
+.star.on{color:var(--accent);}
+
+/* statusbar */
+.statusbar{position:fixed;bottom:0;left:0;right:0;height:22px;background:var(--accent);display:flex;align-items:center;padding:0 12px;gap:14px;z-index:200;}
+.sbi{font-size:10px;color:rgba(255,255,255,0.6);}
+.sbi b{color:rgba(255,255,255,0.9);font-weight:500;}
+
+/* scrollbars */
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* section drag-reorder visual */
+.section-drag-ghost{opacity:0.4;}
+.section-drop-indicator{height:3px;background:var(--accent);border-radius:2px;margin:2px 0;}
+
+.lang-switch{
+  display:flex;
+  gap:8px;
+  margin:10px 0;
+}
+
+.lang-switch button{
+  padding:8px 12px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  background:#eee;
+  font-weight:600;
+}
+
+.lang-switch button:hover{
+  opacity:.8;
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">CV<span>..</span>Studio</div>
+  <span class="tbar-label">Язык:</span>
+  <div class="lang-switch">
+    <button onclick="setLang('en')">EN</button>
+    <button onclick="setLang('pl')">PL</button>
+    <button onclick="setLang('ru')">RU</button>
+    <button onclick="setLang('ua')">UA</button>
+  </div>
+  <div class="logo">CV<span>.</span>Studio</div>
+  <span class="tbar-label">Тема:</span>
+  <div id="swatches" style="display:flex;gap:4px;margin-right:8px;"></div>
+  <div class="tgap"></div>
+  <button class="tbtn" onclick="undo()">↩ Отменить</button>
+  <button class="tbtn" onclick="toggleGrid()">Сетка</button>
+  <button class="tbtn" onclick="document.getElementById('pdf-imp').click()">📄 Импорт PDF</button>
+  <button class="tbtn primary" onclick="exportPDF()">⬇ PDF</button>
+  <input type="file" id="pdf-imp" accept=".pdf" style="display:none;" onchange="importPDF(event)">
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-head">Добавить блок</div>
+  <div class="sb-scroll">
+    <div class="sb-cat">Основные</div>
+    <div class="bitem" draggable="true" data-block="experience"><div class="bico" style="background:#fef9ec;color:#854f0b;">☰</div>Опыт работы</div>
+    <div class="bitem" draggable="true" data-block="education"><div class="bico" style="background:#fdf2f8;color:#831843;">✦</div>Образование</div>
+    <div class="bitem" draggable="true" data-block="about"><div class="bico" style="background:#f0fdf4;color:#065f46;">✐</div>О себе</div>
+    <div class="sb-cat">Дополнительные</div>
+    <div class="bitem" draggable="true" data-block="skills"><div class="bico" style="background:#eef2f8;color:#1a3c6e;">▣</div>Навыки</div>
+    <div class="bitem" draggable="true" data-block="languages"><div class="bico" style="background:#f0fdf4;color:#065f46;">◎</div>Языки</div>
+    <div class="bitem" draggable="true" data-block="certifications"><div class="bico" style="background:#fef9ec;color:#854f0b;">★</div>Сертификаты</div>
+    <div class="bitem" draggable="true" data-block="achievements"><div class="bico" style="background:#fdf2f8;color:#831843;">▸</div>Достижения</div>
+    <div class="bitem" draggable="true" data-block="projects"><div class="bico" style="background:#eef2f8;color:#4c1d95;">⬡</div>Проекты</div>
+    <div class="bitem" draggable="true" data-block="links"><div class="bico" style="background:#f0fdf4;color:#065f46;">🔗</div>Соц. сети</div>
+    <div class="sb-cat">Элементы</div>
+    <div class="bitem" draggable="true" data-block="textblock"><div class="bico" style="background:#f5f3ef;color:#7a7568;">T</div>Текстовый блок</div>
+    <div class="bitem" draggable="true" data-block="signature"><div class="bico" style="background:#f5f3ef;color:#7a7568;">✍</div>Подпись</div>
+    <div class="bitem" draggable="true" data-block="custom"><div class="bico" style="background:#f5f3ef;color:#7a7568;">T</div>Свободный текст</div>
+    <div class="bitem" draggable="true" data-block="divider"><div class="bico" style="background:#f5f3ef;color:#7a7568;">━</div>Разделитель</div>
+    <div style="margin-top:16px;padding:8px 6px;font-size:10.5px;color:var(--muted);line-height:1.6;border-top:1px solid var(--border);">
+      💡 Перетащи блок на холст (левую или правую колонку). Блоки можно переупорядочивать внутри панели редактирования.
+    </div>
+  </div>
+</div>
+
+<!-- CANVAS -->
+<div class="canvas-wrap">
+  <div class="ctoolbar">
+    <span style="font-size:10px;color:var(--muted);">Масштаб:</span>
+    <button class="ctbtn" onclick="setZoom(70)">70%</button>
+    <button class="ctbtn on" id="zbtn-85" onclick="setZoom(85)">85%</button>
+    <button class="ctbtn" onclick="setZoom(100)">100%</button>
+    <div class="ctsep"></div>
+    <span style="font-size:10px;color:var(--muted);">Макет:</span>
+    <button class="ctbtn on" id="lb-classic" onclick="setLayout('classic')">Классик</button>
+    <button class="ctbtn" id="lb-minimal" onclick="setLayout('minimal')">Минимал</button>
+    <button class="ctbtn" id="lb-bold" onclick="setLayout('bold')">Смелый</button>
+    <button class="ctbtn" id="lb-right" onclick="setLayout('right')">Прав. бок.</button>
+  </div>
+  <div class="cscroll">
+    <div class="cv-paper layout-classic" id="cvp" style="--ca:#1a3c6e;--cl:#eef2f8;"></div>
+  </div>
+</div>
+
+<!-- PROPS PANEL -->
+<div class="props">
+  <div class="ptabs">
+    <div class="ptab on" onclick="switchTab('personal')">Личные</div>
+    <div class="ptab" onclick="switchTab('sections')">Секции</div>
+    <div class="ptab" onclick="switchTab('design')">Дизайн</div>
+    <div class="ptab" onclick="switchTab('export')">Экспорт</div>
+  </div>
+  <div class="pbody" id="pbody"></div>
+</div>
+
+</div><!-- /app -->
+
+<div class="statusbar">
+  <div class="sbi">Страница: <b>A4</b></div>
+  <div class="sbi">Масштаб: <b id="sb-zoom">85%</b></div>
+  <div class="sbi">Секций: <b id="sb-secs">0</b></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" style="display:none;" onclick="closeModal(event)">
+  <div class="modal" id="modal-inner" onclick="event.stopPropagation()"></div>
+</div>
+
+<script>
+// ================================================================
+// TRANSLATIONS - MUST BE FIRST BEFORE EVERYTHING
+// ================================================================
+const LANGS = {
+ru:{
+profile:"Профиль",
+expTitle:"Опыт работы",
+eduTitle:"Образование",
+skillsTitle:"Навыки",
+langTitle:"Языки",
+certsTitle:"Сертификаты",
+achTitle:"Достижения",
+projTitle:"Проекты",
+contacts:"Контакты",
+additional:"Дополнительно",
+summary:"О себе"
+},
+
+ua:{
+profile:"Профіль",
+expTitle:"Досвід роботи",
+eduTitle:"Освіта",
+skillsTitle:"Навички",
+langTitle:"Мови",
+certsTitle:"Сертифікати",
+achTitle:"Досягнення",
+projTitle:"Проєкти",
+contacts:"Контакти",
+additional:"Додатково",
+summary:"Про себе"
+},
+
+pl:{
+profile:"Profil",
+expTitle:"Doświadczenie",
+eduTitle:"Edukacja",
+skillsTitle:"Umiejętności",
+langTitle:"Języki",
+certsTitle:"Certyfikaty",
+achTitle:"Osiągnięcia",
+projTitle:"Projekty",
+contacts:"Kontakt",
+additional:"Dodatkowe",
+summary:"O mnie"
+},
+
+en:{
+profile:"Profile",
+expTitle:"Experience",
+eduTitle:"Education",
+skillsTitle:"Skills",
+langTitle:"Languages",
+certsTitle:"Certificates",
+achTitle:"Achievements",
+projTitle:"Projects",
+contacts:"Contacts",
+additional:"Additional",
+summary:"About Me"
+}
+};
+
+let currentLang = 'ru';
+
+function setLang(lang){
+  S.lang = lang;
+  localStorage.setItem("cv_lang", lang);
+  renderCV();
+}
+
+function t(key){
+ return LANGS[S.lang]?.[key] || LANGS.en[key] || key;
+}
+
+// ================================================================
+// THEMES
+// ================================================================
+const THEMES = {
+  navy:    {accent:'#1a3c6e', light:'#eef2f8', accent2:'#c8a96e'},
+  slate:   {accent:'#334155', light:'#f1f5f9', accent2:'#94a3b8'},
+  emerald: {accent:'#065f46', light:'#ecfdf5', accent2:'#6ee7b7'},
+  wine:    {accent:'#7f1d1d', light:'#fff1f2', accent2:'#fca5a5'},
+  plum:    {accent:'#4c1d95', light:'#f5f3ff', accent2:'#a78bfa'},
+  teal:    {accent:'#0f4c6e', light:'#e0f2fe', accent2:'#7dd3fc'},
+  rust:    {accent:'#7c2d12', light:'#fff7ed', accent2:'#fb923c'},
+  forest:  {accent:'#14532d', light:'#f0fdf4', accent2:'#86efac'},
+};
+
+// ================================================================
+// STATE
+// ================================================================
+let S = {
+  theme: 'navy',
+  layout: 'classic',
+  zoom: 85,
+  font: 'playfair',
+  activeTab: 'personal',
+  gridOn: false,
+  history: [],
+  data: {
+    name: 'Test User',
+    title: 'Sample Position',
+    email: 'test@example.com',
+    phone: '+00 000 000 000',
+    location: 'Sample City',
+    photo: '',
+    about: 'Краткое тестовое описание профиля для демонстрации структуры данных.',
+    
+    rightOrder: ['about','experience','education','achievements','projects','custom','divider'],
+    leftOrder: ['skills','languages','certifications','links'],
+
+    sections: {
+      about: {enabled:true, col:'right'},
+      experience: {enabled:true, col:'right'},
+      education: {enabled:true, col:'right'},
+      skills: {enabled:true, col:'left'},
+      languages: {enabled:true, col:'left'},
+      certifications: {enabled:true, col:'left'},
+      achievements: {enabled:false, col:'right'},
+      projects: {enabled:false, col:'right'},
+      links: {enabled:false, col:'left'},
+      custom: {enabled:false, col:'right'},
+      divider: {enabled:false, col:'right'},
+    },
+
+    experience: [
+      {id:1, role:'Frontend Developer', company:'SampleCorp', from:'2022', to:'Present', desc:'Тестовое описание обязанностей и задач.', tags:'React, TypeScript'},
+      {id:2, role:'Junior Developer', company:'DemoSoft', from:'2020', to:'2022', desc:'Тестовое описание предыдущего опыта.', tags:'Vue.js, REST'},
+    ],
+
+    education: [
+      {id:1, degree:'Бакалавр информатики', school:'Sample University', year:'2016 – 2020', desc:''},
+      {id:2, degree:'UI/UX Certificate', school:'Online Academy', year:'2021', desc:''},
+    ],
+
+    skills: [
+      {id:1, name:'JavaScript', level:80},
+      {id:2, name:'React', level:75},
+      {id:3, name:'CSS', level:70},
+      {id:4, name:'Node.js', level:60},
+      {id:5, name:'Design Tools', level:65},
+    ],
+
+    languages: [
+      {id:1, lang:'English', level:4},
+      {id:2, lang:'German', level:2},
+      {id:3, lang:'Spanish', level:1},
+    ],
+
+    certifications: [
+      {id:1, name:'Frontend Basics', issuer:'Online Academy', year:'2022'},
+    ],
+
+    achievements: [
+      {id:1, text:'Тестовое достижение №1'},
+      {id:2, text:'Тестовое достижение №2'},
+    ],
+
+    projects: [
+      {id:1, name:'DemoProject', desc:'Тестовый проект для демонстрации.', link:'https://example.com', tags:'React'},
+    ],
+
+    links: [
+      {id:1, icon:'🔗', label:'LinkedIn', url:'https://example.com/linkedin'},
+      {id:2, icon:'⌨', label:'GitHub', url:'https://example.com/github'},
+      {id:3, icon:'🌐', label:'Portfolio', url:'https://example.com'},
+    ],
+
+    custom: {
+      title:'Дополнительно',
+      text:'Тестовый текст для пользовательского блока.'
+    },
+
+    textblock: {
+      title: 'Согласие на обработку данных',
+      content: 'Тестовый текст согласия на обработку данных.'
+    },
+
+    signature: {
+      image: '',
+    },
+  }
+};
+
+
+S.lang = localStorage.getItem("cv_lang") || "en";
+
+// ================================================================
+// HISTORY
+// ================================================================
+function saveH() { S.history.push(JSON.stringify(S.data)); if(S.history.length>30) S.history.shift(); }
+function undo() { if(!S.history.length) return; S.data = JSON.parse(S.history.pop()); renderCV(); renderProps(); }
+
+// ================================================================
+// THEME
+// ================================================================
+function buildSwatches() {
+  const c = document.getElementById('swatches');
+  c.innerHTML = Object.entries(THEMES).map(([k,v])=>
+    `<div class="swatch${S.theme===k?' on':''}" data-t="${k}" style="background:${v.accent};" title="${k}"></div>`
+  ).join('');
+  c.querySelectorAll('.swatch').forEach(s=>s.addEventListener('click',()=>{ S.theme=s.dataset.t; applyTheme(); }));
+}
+function applyTheme() {
+  const theme = THEMES[S.theme];
+  const p = document.getElementById('cvp');
+
+  p.style.setProperty('--ca', theme.accent);
+  p.style.setProperty('--cl', theme.light);
+
+  document.querySelectorAll('.swatch').forEach(s=>{
+    s.classList.toggle('on', s.dataset.t === S.theme);
+  });
+
+  renderCV();
+
+  if(S.activeTab === 'design') renderProps();
+}
+
+// ================================================================
+// ZOOM / LAYOUT
+// ================================================================
+function setZoom(z) {
+  S.zoom = z;
+  const p = document.getElementById('cvp');
+  p.style.transform = `scale(${z/100})`;
+  p.style.marginBottom = `${(z/100 - 1) * 1123}px`;
+  document.getElementById('sb-zoom').textContent = z+'%';
+  document.querySelectorAll('.ctbtn').forEach(b=>{
+    if([70,85,100].includes(+b.textContent.replace('%',''))) b.classList.remove('on');
+  });
+  document.querySelectorAll('.ctbtn').forEach(b=>{ if(b.textContent.trim()===z+'%') b.classList.add('on'); });
+}
+function setLayout(l) {
+  S.layout = l;
+  const p = document.getElementById('cvp');
+  p.className = p.className.replace(/layout-\w+/,'') + ' layout-' + l;
+  ['classic','minimal','bold','right'].forEach(x=>document.getElementById('lb-'+x).classList.toggle('on', x===l));
+  renderCV();
+}
+function toggleGrid() {
+  S.gridOn = !S.gridOn;
+  const p = document.getElementById('cvp');
+  p.style.backgroundImage = S.gridOn
+    ? 'linear-gradient(rgba(26,60,110,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(26,60,110,0.05) 1px,transparent 1px)'
+    : 'none';
+  p.style.backgroundSize = '20px 20px';
+}
+
+// ================================================================
+// RENDER CV
+// ================================================================
+function getFont() {
+  const fs = {playfair:"'Playfair Display',serif", sans:"'DM Sans',sans-serif", raleway:"'Raleway',sans-serif", mono:"'DM Mono',monospace"};
+  return fs[S.font] || fs.playfair;
+}
+
+function renderCV() {
+  const d = S.data;
+  const p = document.getElementById('cvp');
+  const theme = THEMES[S.theme];
+  p.style.setProperty('--ca', theme.accent);
+  p.style.setProperty('--cl', theme.light);
+  p.style.setProperty('--cf', getFont());
+
+  const isBold = S.layout === 'bold';
+  const hasLeft = !isBold;
+
+  // --- HEADER ---
+  let photoHtml = '';
+  if (d.photo) {
+    const cls = isBold ? 'cv-photo-rect' : 'cv-photo';
+    photoHtml = `<img src="${d.photo}" class="${cls}" alt="photo">`;
+  }
+
+  const contactsHtml = `
+    <div class="cv-contacts">
+      ${d.email ? `<div class="cv-ci">✉ <a href="mailto:${d.email}">${d.email}</a></div>` : ''}
+      ${d.phone ? `<div class="cv-ci">☎ ${d.phone}</div>` : ''}
+      ${d.location ? `<div class="cv-ci">📍 ${d.location}</div>` : ''}
+    </div>`;
+
+  let headerHtml = '';
+  if (isBold) {
+    const linksEnabled = d.sections.links && d.sections.links.enabled;
+    headerHtml = `<div class="cv-header">
+      <div class="cv-hl">
+        <div style="display:flex;align-items:flex-start;gap:14px;">
+          ${photoHtml}
+          <div>
+            <div class="cv-name" style="font-family:${getFont()}">${d.name}</div>
+            <div class="cv-jobtitle">${d.title}</div>
+            ${contactsHtml}
+          </div>
+        </div>
+      </div>
+      <div class="cv-hr" style="color:rgba(255,255,255,0.82);">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.45);margin-bottom:8px;">Контакты</div>
+        ${linksEnabled ? d.links.map(l=>`<a href="${l.url}" style="color:rgba(255,255,255,0.82);text-decoration:none;display:flex;align-items:center;gap:5px;margin-bottom:4px;font-size:10.5px;">${l.icon} ${l.label}</a>`).join('') : ''}
+      </div>
+    </div>`;
+  } else {
+    const headerStyle = S.layout === 'minimal' ? `style="color:${theme.accent};"` : '';
+    headerHtml = `<div class="cv-header">
+      <div style="display:flex;align-items:flex-start;gap:14px;justify-content:space-between;">
+        <div>
+          <div class="cv-name" ${headerStyle} style="font-family:${getFont()}">${d.name}</div>
+          <div class="cv-jobtitle">${d.title}</div>
+          ${contactsHtml}
+        </div>
+        ${photoHtml}
+      </div>
+    </div>`;
+  }
+
+  // --- SECTIONS RENDERER ---
+  function secTitle(txt, muted) {
+    return `<div class="cv-sec-title${muted?' muted':''}">${txt}</div>`;
+  }
+
+  function renderSection(key) {
+    const d2 = S.data;
+    if (!d2.sections[key] || !d2.sections[key].enabled) return '';
+    switch(key) {
+      case 'about':
+        return `<div class="cv-section">${secTitle(t('profile'))}
+          <p class="cv-about">${d2.about}</p></div>`;
+      case 'experience':
+        return `<div class="cv-section">${secTitle(t('expTitle'))}
+          ${d2.experience.map(e=>`<div class="cv-exp">
+            <div class="cv-exp-hd"><span class="cv-exp-role">${e.role}</span><span class="cv-exp-date">${e.from} – ${e.to}</span></div>
+            <div class="cv-exp-co">${e.company}</div>
+            <div class="cv-exp-desc">${e.desc}</div>
+            ${e.tags ? `<div class="cv-tags">${e.tags.split(',').map(tag=>`<span class="cv-tag">${tag.trim()}</span>`).join('')}</div>` : ''}
+          </div>`).join('')}</div>`;
+      case 'education':
+        return `<div class="cv-section">${secTitle(t('eduTitle'))}
+          ${d2.education.map(e=>`<div class="cv-edu">
+            <div class="cv-edu-degree">${e.degree}</div>
+            <div class="cv-edu-school">${e.school}</div>
+            <div class="cv-edu-year">${e.year}</div>
+            ${e.desc ? `<div class="cv-about" style="margin-top:2px;">${e.desc}</div>` : ''}
+          </div>`).join('')}</div>`;
+      case 'skills':
+        return `<div class="cv-section">${secTitle(t('skillsTitle'), true)}
+          ${d2.skills.map(s=>`<div class="cv-skill">
+            <div class="cv-skill-row"><span>${s.name}</span><span style="font-size:9px;color:#999">${s.level}%</span></div>
+            <div class="cv-bar"><div class="cv-bar-fill" style="width:${s.level}%"></div></div>
+          </div>`).join('')}</div>`;
+      case 'languages':
+        return `<div class="cv-section">${secTitle(t('langTitle'), true)}
+          ${d2.languages.map(l=>`<div class="cv-lang-row">
+            <span>${l.lang}</span>
+            <div class="cv-dots">${[1,2,3,4,5].map(i=>`<div class="cv-dot${i<=l.level?' on':''}"></div>`).join('')}</div>
+          </div>`).join('')}</div>`;
+      case 'certifications':
+        return `<div class="cv-section">${secTitle(t('certsTitle'), true)}
+          ${d2.certifications.map(c=>`<div class="cv-cert">
+            <div class="cv-cert-badge">★</div>
+            <div><div style="font-size:11px;font-weight:500;">${c.name}</div>
+            <div style="font-size:9.5px;color:#888;">${c.issuer}${c.year?' · '+c.year:''}</div></div>
+          </div>`).join('')}</div>`;
+      case 'achievements':
+        return `<div class="cv-section">${secTitle(t('achTitle'))}
+          ${d2.achievements.map(a=>`<div class="cv-ach"><span class="cv-ach-bullet">▸</span>${a.text}</div>`).join('')}</div>`;
+      case 'projects':
+        return `<div class="cv-section">${secTitle(t('projTitle'))}
+          ${d2.projects.map(pr=>`<div class="cv-exp">
+            <div class="cv-exp-hd"><span class="cv-exp-role">${pr.name}</span>${pr.link?`<a href="${pr.link.startsWith('http')?pr.link:'https://'+pr.link}" style="font-size:9.5px;color:var(--ca);">${pr.link}</a>`:''}</div>
+            <div class="cv-exp-desc">${pr.desc}</div>
+            ${pr.tags ? `<div class="cv-tags">${pr.tags.split(',').map(tag=>`<span class="cv-tag">${tag.trim()}</span>`).join('')}</div>` : ''}
+          </div>`).join('')}</div>`;
+      case 'links':
+        return `<div class="cv-section">${secTitle('Контакты / Соцсети', true)}
+          ${d2.links.map(l=>`<div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;font-size:11px;">
+            <span>${l.icon}</span>
+            ${l.url ? `<a href="${l.url.startsWith('http')?l.url:'https://'+l.url}" style="color:var(--ca);text-decoration:none;">${l.label}</a>` : `<span>${l.label}</span>`}
+          </div>`).join('')}</div>`;
+      case 'custom':
+        return `<div class="cv-section">${secTitle(d2.custom.title)}
+          <p class="cv-about">${d2.custom.text}</p></div>`;
+      case 'divider':
+        return `<div style="border-top:1px solid #eee;margin:8px 0;"></div>`;
+      default: return '';
+    }
+  }
+
+  // build columns
+  const rightSecs = (d.rightOrder || []).map(k => renderSection(k)).join('');
+  const leftSecs = hasLeft ? (d.leftOrder || []).map(k => renderSection(k)).join('') : '';
+
+  const bodyHtml = isBold
+    ? `<div class="cv-body"><div class="cv-right">${rightSecs}</div></div>`
+    : `<div class="cv-body"><div class="cv-left">${leftSecs}</div><div class="cv-right">${rightSecs}</div></div>`;
+
+  p.innerHTML = headerHtml + bodyHtml;
+  document.getElementById('sb-secs').textContent =
+    Object.values(d.sections).filter(s=>s.enabled).length;
+}
+
+// ================================================================
+// PROPS PANEL
+// ================================================================
+function switchTab(t) {
+  S.activeTab = t;
+  ['personal','sections','design','export'].forEach((x,i)=>{
+    document.querySelectorAll('.ptab')[i].classList.toggle('on', x===t);
+  });
+  renderProps();
+}
+
+function renderProps() {
+  const pb = document.getElementById('pbody');
+  const d = S.data;
+
+  if (S.activeTab === 'personal') {
+    pb.innerHTML = `
+    <div class="pgroup">
+      <span class="plabel">Фото профиля</span>
+      <div class="photo-upload-area" onclick="document.getElementById('photo-input').click()">
+        ${d.photo ? `<img src="${d.photo}" class="photo-preview">` : '<div style="font-size:28px;margin-bottom:6px;">👤</div>'}
+        <div class="photo-upload-text">${d.photo ? 'Нажми чтобы сменить' : 'Нажми для загрузки фото'}</div>
+      </div>
+      <input type="file" id="photo-input" accept="image/*" style="display:none;" onchange="uploadPhoto(event)">
+      ${d.photo ? `<button class="add-btn" style="margin-top:5px;" onclick="saveH();S.data.photo='';renderCV();renderProps();">✕ Убрать фото</button>` : ''}
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Основное</span>
+      <input class="pinput" value="${esc(d.name)}" oninput="upd('name',this.value)" placeholder="Имя Фамилия" style="margin-bottom:5px;">
+      <input class="pinput" value="${esc(d.title)}" oninput="upd('title',this.value)" placeholder="Должность">
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Контакты</span>
+      <input class="pinput" value="${esc(d.email)}" oninput="upd('email',this.value)" placeholder="Email" style="margin-bottom:5px;">
+      <input class="pinput" value="${esc(d.phone)}" oninput="upd('phone',this.value)" placeholder="Телефон" style="margin-bottom:5px;">
+      <input class="pinput" value="${esc(d.location)}" oninput="upd('location',this.value)" placeholder="Город, Страна">
+    </div>
+    <div class="pgroup">
+      <span class="plabel">О себе</span>
+      <textarea class="ptextarea" oninput="upd('about',this.value)">${esc(d.about)}</textarea>
+    </div>
+    `;
+  }
+
+  else if (S.activeTab === 'sections') {
+    const secNames = {experience:'Опыт работы',education:'Образование',skills:'Навыки',languages:'Языки',certifications:'Сертификаты',achievements:'Достижения',projects:'Проекты',links:'Соц. сети',about:'О себе',custom:'Свободный текст',divider:'Разделитель'};
+
+    // Experience
+    pb.innerHTML = `
+    <div class="pgroup">
+      <span class="plabel">Видимость секций</span>
+      ${Object.entries(d.sections).map(([k,v])=>`
+        <div class="tog-row"><span>${secNames[k]||k}</span>
+          <div class="toggle${v.enabled?' on':''}" onclick="toggleSec('${k}')"></div>
+        </div>`).join('')}
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Опыт работы</span>
+      ${d.experience.map(e=>`
+        <div class="pcard">
+          <div class="pcard-title">${esc(e.role)}</div>
+          <div class="pcard-sub">${esc(e.company)} · ${e.from}–${e.to}</div>
+          <div class="pcard-actions">
+            <button class="pca-btn" onclick="editExp(${e.id})">✏</button>
+            <button class="pca-btn del" onclick="delItem('experience',${e.id})">✕</button>
+          </div>
+        </div>`).join('')}
+      <button class="add-btn" onclick="addExp()">+ Добавить опыт</button>
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Образование</span>
+      ${d.education.map(e=>`
+        <div class="pcard">
+          <div class="pcard-title">${esc(e.degree)}</div>
+          <div class="pcard-sub">${esc(e.school)} · ${e.year}</div>
+          <div class="pcard-actions">
+            <button class="pca-btn" onclick="editEdu(${e.id})">✏</button>
+            <button class="pca-btn del" onclick="delItem('education',${e.id})">✕</button>
+          </div>
+        </div>`).join('')}
+      <button class="add-btn" onclick="addEdu()">+ Добавить образование</button>
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Навыки</span>
+      ${d.skills.map(s=>`
+        <div class="pcard">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:12px;font-weight:500;">${esc(s.name)}</span>
+            <div class="pcard-actions" style="position:static;">
+              <button class="pca-btn" onclick="editSkill(${s.id})">✏</button>
+              <button class="pca-btn del" onclick="delItem('skills',${s.id})">✕</button>
+            </div>
+          </div>
+          <div class="cv-bar" style="margin-top:5px;"><div class="cv-bar-fill" style="width:${s.level}%;background:var(--accent);"></div></div>
+        </div>`).join('')}
+      <button class="add-btn" onclick="addSkill()">+ Добавить навык</button>
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Языки</span>
+      ${d.languages.map(l=>`
+        <div class="pcard">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:12px;font-weight:500;">${esc(l.lang)}</span>
+            <div class="pcard-actions" style="position:static;">
+              <button class="pca-btn" onclick="editLang(${l.id})">✏</button>
+              <button class="pca-btn del" onclick="delItem('languages',${l.id})">✕</button>
+            </div>
+          </div>
+          <div class="cv-dots" style="margin-top:5px;">${[1,2,3,4,5].map(i=>`<div class="cv-dot${i<=l.level?' on':''}"></div>`).join('')}</div>
+        </div>`).join('')}
+      <button class="add-btn" onclick="addLang()">+ Добавить язык</button>
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Сертификаты</span>
+      ${d.certifications.map(c=>`
+        <div class="pcard">
+          <div class="pcard-title">${esc(c.name)}</div>
+          <div class="pcard-sub">${esc(c.issuer)}${c.year?' · '+c.year:''}</div>
+          <div class="pcard-actions">
+            <button class="pca-btn" onclick="editCert(${c.id})">✏</button>
+            <button class="pca-btn del" onclick="delItem('certifications',${c.id})">✕</button>
+          </div>
+        </div>`).join('')}
+      <button class="add-btn" onclick="addCert()">+ Добавить сертификат</button>
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Достижения</span>
+      ${d.achievements.map(a=>`
+        <div class="pcard">
+          <div class="pcard-title" style="font-size:11px;font-weight:400;line-height:1.5;">${esc(a.text)}</div>
+          <div class="pcard-actions">
+            <button class="pca-btn" onclick="editAch(${a.id})">✏</button>
+            <button class="pca-btn del" onclick="delItem('achievements',${a.id})">✕</button>
+          </div>
+        </div>`).join('')}
+      <button class="add-btn" onclick="addAch()">+ Добавить достижение</button>
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Проекты</span>
+      ${d.projects.map(pr=>`
+        <div class="pcard">
+          <div class="pcard-title">${esc(pr.name)}</div>
+          <div class="pcard-sub">${esc(pr.desc)}</div>
+          <div class="pcard-actions">
+            <button class="pca-btn" onclick="editProject(${pr.id})">✏</button>
+            <button class="pca-btn del" onclick="delItem('projects',${pr.id})">✕</button>
+          </div>
+        </div>`).join('')}
+      <button class="add-btn" onclick="addProject()">+ Добавить проект</button>
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Соц. сети / Ссылки</span>
+      ${d.links.map(l=>`
+        <div class="pcard">
+          <div class="pcard-title">${l.icon} ${esc(l.label)}</div>
+          <div class="pcard-sub" style="word-break:break-all;">${esc(l.url)}</div>
+          <div class="pcard-actions">
+            <button class="pca-btn" onclick="editLink(${l.id})">✏</button>
+            <button class="pca-btn del" onclick="delItem('links',${l.id})">✕</button>
+          </div>
+        </div>`).join('')}
+      <button class="add-btn" onclick="addLink()">+ Добавить ссылку</button>
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Свободный текст</span>
+      <input class="pinput" value="${esc(d.custom.title)}" oninput="S.data.custom.title=this.value;renderCV();" placeholder="Заголовок" style="margin-bottom:5px;">
+      <textarea class="ptextarea" oninput="S.data.custom.text=this.value;renderCV();">${esc(d.custom.text)}</textarea>
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Порядок секций (правая колонка)</span>
+      <div id="order-right">${renderOrderList('right')}</div>
+      <span class="plabel" style="margin-top:10px;">Левая колонка</span>
+      <div id="order-left">${renderOrderList('left')}</div>
+    </div>
+    `;
+    initOrderDrag();
+  }
+
+  else if (S.activeTab === 'design') {
+    const t = THEMES[S.theme];
+    pb.innerHTML = `
+    <div class="pgroup">
+      <span class="plabel">Цветовая тема</span>
+      <div class="cgrid">
+        ${Object.entries(THEMES).map(([k,v])=>`<div class="csw${S.theme===k?' on':''}" style="background:${v.accent};" onclick="S.theme='${k}';applyTheme();" title="${k}"></div>`).join('')}
+      </div>
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Шрифт заголовков</span>
+      <div class="fopt${S.font==='playfair'?' on':''}" style="font-family:'Playfair Display',serif;" onclick="setFont('playfair')">Playfair Display — элегантный</div>
+      <div class="fopt${S.font==='raleway'?' on':''}" style="font-family:'Raleway',sans-serif;" onclick="setFont('raleway')">Raleway — современный</div>
+      <div class="fopt${S.font==='sans'?' on':''}" style="font-family:'DM Sans',sans-serif;" onclick="setFont('sans')">DM Sans — нейтральный</div>
+      <div class="fopt${S.font==='mono'?' on':''}" style="font-family:'DM Mono',monospace;" onclick="setFont('mono')">DM Mono — технический</div>
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Макет страницы</span>
+      <div class="lgrid">
+        ${lthumb('classic','Классик')}
+        ${lthumb('minimal','Минимал')}
+        ${lthumb('bold','Смелый')}
+        ${lthumb('right','Прав. бок.')}
+      </div>
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Масштаб</span>
+      <div class="rrow">
+        <input type="range" min="60" max="110" step="5" value="${S.zoom}" oninput="setZoom(+this.value)">
+        <span class="rval">${S.zoom}%</span>
+      </div>
+    </div>
+    `;
+  }
+
+  else if (S.activeTab === 'export') {
+    pb.innerHTML = `
+    <div class="pgroup" style="font-size:11px;color:var(--muted);line-height:1.6;background:var(--bg);border-radius:7px;padding:10px;border:1px solid var(--border);">
+      Все данные хранятся только в браузере. PDF генерируется локально — ничего не отправляется на сервер.
+    </div>
+    <div style="margin-top:12px;">
+      <button class="ebtn" onclick="exportPDF()"><span class="ebtn-ico">⬇</span><div><div style="font-size:12px;font-weight:500;">Скачать PDF</div><div style="font-size:10px;color:var(--muted);">Формат A4, высокое качество</div></div></button>
+      <button class="ebtn" onclick="window.print()"><span class="ebtn-ico">🖨</span><div><div style="font-size:12px;font-weight:500;">Печать</div><div style="font-size:10px;color:var(--muted);">Или «Сохранить как PDF» в диалоге</div></div></button>
+      <button class="ebtn" onclick="exportJSON()"><span class="ebtn-ico">{ }</span><div><div style="font-size:12px;font-weight:500;">Сохранить данные (JSON)</div><div style="font-size:10px;color:var(--muted);">Резервная копия всех данных</div></div></button>
+      <button class="ebtn" onclick="document.getElementById('imp-file').click()"><span class="ebtn-ico">↑</span><div><div style="font-size:12px;font-weight:500;">Импортировать JSON</div><div style="font-size:10px;color:var(--muted);">Загрузить сохранённые данные</div></div></button>
+      <input type="file" id="imp-file" accept=".json" style="display:none;" onchange="importJSON(event)">
+    </div>
+    `;
+  }
+}
+
+function lthumb(l, label) {
+  const t = THEMES[S.theme];
+  const thumbInner = {
+    classic: `<div style="height:14px;background:${t.accent};"></div><div style="display:flex;flex:1;"><div style="width:36%;background:${t.light};"></div><div style="flex:1;background:white;"></div></div>`,
+    minimal: `<div style="height:12px;border-bottom:2px solid ${t.accent};"></div><div style="display:flex;flex:1;"><div style="width:34%;border-right:1px solid #eee;"></div><div style="flex:1;"></div></div>`,
+    bold: `<div style="height:24px;background:${t.accent};"></div><div style="flex:1;background:white;"></div>`,
+    right: `<div style="height:14px;background:${t.accent};"></div><div style="display:flex;flex:1;"><div style="flex:1;background:white;"></div><div style="width:34%;background:${t.light};"></div></div>`,
+  };
+  return `<div class="lthumb${S.layout===l?' on':''}" onclick="setLayout('${l}')" title="${label}">${thumbInner[l]}</div>`;
+}
+
+// ================================================================
+// ORDER DRAG (section reorder)
+// ================================================================
+function renderOrderList(col) {
+  const order = col === 'right' ? S.data.rightOrder : S.data.leftOrder;
+  const secNames = {experience:'Опыт работы',education:'Образование',skills:'Навыки',languages:'Языки',certifications:'Сертификаты',achievements:'Достижения',projects:'Проекты',links:'Ссылки',about:'О себе',custom:'Свободный текст',divider:'Разделитель'};
+  return order.filter(k => S.data.sections[k]).map(k=>`
+    <div class="pcard" draggable="true" data-key="${k}" data-col="${col}" style="cursor:grab;display:flex;align-items:center;gap:6px;padding:6px 9px;margin-bottom:3px;">
+      <span style="color:var(--muted);font-size:12px;">⠿</span>
+      <span style="font-size:11.5px;">${secNames[k]||k}</span>
+    </div>`).join('');
+}
+
+function initOrderDrag() {
+  ['right','left'].forEach(col => {
+    const container = document.getElementById('order-'+col);
+    if (!container) return;
+    let dragKey = null;
+    container.querySelectorAll('[data-key]').forEach(el => {
+      el.addEventListener('dragstart', e => { dragKey = el.dataset.key; el.style.opacity='0.4'; });
+      el.addEventListener('dragend', e => { el.style.opacity='1'; dragKey=null; });
+      el.addEventListener('dragover', e => { e.preventDefault(); });
+      el.addEventListener('drop', e => {
+        e.preventDefault();
+        const targetKey = el.dataset.key;
+        if (!dragKey || dragKey === targetKey) return;
+        const order = col==='right' ? S.data.rightOrder : S.data.leftOrder;
+        const from = order.indexOf(dragKey);
+        const to = order.indexOf(targetKey);
+        if (from > -1 && to > -1) {
+          order.splice(from, 1);
+          order.splice(to, 0, dragKey);
+          renderCV();
+          renderProps();
+        }
+      });
+    });
+  });
+}
+
+// ================================================================
+// HELPERS
+// ================================================================
+function esc(s) { return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function uid() { return Date.now() + Math.floor(Math.random()*1000); }
+function upd(key, val) { S.data[key] = val; renderCV(); }
+function setFont(f) { S.font = f; renderCV(); if(S.activeTab==='design') renderProps(); }
+function toggleSec(k) { saveH(); S.data.sections[k].enabled = !S.data.sections[k].enabled; renderCV(); renderProps(); }
+function delItem(arr, id) { saveH(); S.data[arr] = S.data[arr].filter(x=>x.id!==id); renderCV(); renderProps(); }
+
+// ================================================================
+// MODALS
+// ================================================================
+function openModal(html) {
+  document.getElementById('modal-inner').innerHTML = html;
+  document.getElementById('modal').style.display = 'flex';
+}
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal')) {
+    document.getElementById('modal').style.display = 'none';
+  }
+}
+function closeModalBtn() { document.getElementById('modal').style.display = 'none'; }
+
+// EXPERIENCE
+function editExp(id) {
+  const e = S.data.experience.find(x=>x.id===id);
+  openModal(`<div class="modal-title">✏ Опыт работы</div>
+    <div class="modal-row"><label class="modal-label">Должность</label><input class="modal-input" id="m-role" value="${esc(e.role)}"></div>
+    <div class="modal-row"><label class="modal-label">Компания</label><input class="modal-input" id="m-co" value="${esc(e.company)}"></div>
+    <div class="modal-grid2">
+      <div class="modal-row"><label class="modal-label">Начало</label><input class="modal-input" id="m-from" value="${esc(e.from)}" placeholder="2020"></div>
+      <div class="modal-row"><label class="modal-label">Конец</label><input class="modal-input" id="m-to" value="${esc(e.to)}" placeholder="2023 или н.в."></div>
+    </div>
+    <div class="modal-row"><label class="modal-label">Описание</label><textarea class="modal-textarea" id="m-desc">${esc(e.desc)}</textarea></div>
+    <div class="modal-row"><label class="modal-label">Теги (через запятую)</label><input class="modal-input" id="m-tags" value="${esc(e.tags)}"></div>
+    <div class="modal-actions">
+      <button class="mbtn" onclick="closeModalBtn()">Отмена</button>
+      <button class="mbtn primary" onclick="saveExp(${id})">Сохранить</button>
+    </div>`);
+}
+function saveExp(id) {
+  saveH();
+  const e = S.data.experience.find(x=>x.id===id);
+  e.role = document.getElementById('m-role').value;
+  e.company = document.getElementById('m-co').value;
+  e.from = document.getElementById('m-from').value;
+  e.to = document.getElementById('m-to').value;
+  e.desc = document.getElementById('m-desc').value;
+  e.tags = document.getElementById('m-tags').value;
+  closeModalBtn(); renderCV(); renderProps();
+}
+function addExp() {
+  const id = uid();
+  S.data.experience.push({id, role:'Должность', company:'Компания', from:'2022', to:'н.в.', desc:'Описание обязанностей и достижений', tags:''});
+  S.data.sections.experience.enabled = true;
+  renderCV(); renderProps();
+  editExp(id);
+}
+
+// EDUCATION
+function editEdu(id) {
+  const e = S.data.education.find(x=>x.id===id);
+  openModal(`<div class="modal-title">✦ Образование</div>
+    <div class="modal-row"><label class="modal-label">Степень / специальность</label><input class="modal-input" id="m-deg" value="${esc(e.degree)}"></div>
+    <div class="modal-row"><label class="modal-label">Учебное заведение</label><input class="modal-input" id="m-sch" value="${esc(e.school)}"></div>
+    <div class="modal-row"><label class="modal-label">Период</label><input class="modal-input" id="m-yr" value="${esc(e.year)}" placeholder="2018 – 2022"></div>
+    <div class="modal-row"><label class="modal-label">Доп. информация (необязательно)</label><textarea class="modal-textarea" id="m-edesc">${esc(e.desc||'')}</textarea></div>
+    <div class="modal-actions">
+      <button class="mbtn" onclick="closeModalBtn()">Отмена</button>
+      <button class="mbtn primary" onclick="saveEdu(${id})">Сохранить</button>
+    </div>`);
+}
+function saveEdu(id) {
+  saveH();
+  const e = S.data.education.find(x=>x.id===id);
+  e.degree = document.getElementById('m-deg').value;
+  e.school = document.getElementById('m-sch').value;
+  e.year = document.getElementById('m-yr').value;
+  e.desc = document.getElementById('m-edesc').value;
+  closeModalBtn(); renderCV(); renderProps();
+}
+function addEdu() {
+  const id = uid();
+  S.data.education.push({id, degree:'Специальность', school:'Учебное заведение', year:'2018 – 2022', desc:''});
+  S.data.sections.education.enabled = true;
+  renderCV(); renderProps();
+  editEdu(id);
+}
+
+// SKILLS
+function editSkill(id) {
+  const s = S.data.skills.find(x=>x.id===id);
+  openModal(`<div class="modal-title">▣ Навык</div>
+    <div class="modal-row"><label class="modal-label">Название</label><input class="modal-input" id="m-sname" value="${esc(s.name)}"></div>
+    <div class="modal-row"><label class="modal-label">Уровень: <span id="m-slvl-val">${s.level}%</span></label>
+      <input type="range" min="10" max="100" value="${s.level}" id="m-slvl" oninput="document.getElementById('m-slvl-val').textContent=this.value+'%'" style="width:100%;margin-top:6px;">
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn" onclick="closeModalBtn()">Отмена</button>
+      <button class="mbtn primary" onclick="saveSkill(${id})">Сохранить</button>
+    </div>`);
+}
+function saveSkill(id) {
+  saveH();
+  const s = S.data.skills.find(x=>x.id===id);
+  s.name = document.getElementById('m-sname').value;
+  s.level = +document.getElementById('m-slvl').value;
+  closeModalBtn(); renderCV(); renderProps();
+}
+function addSkill() {
+  const id = uid();
+  S.data.skills.push({id, name:'Новый навык', level:70});
+  S.data.sections.skills.enabled = true;
+  renderCV(); renderProps();
+  editSkill(id);
+}
+
+// LANGUAGES
+function editLang(id) {
+  const l = S.data.languages.find(x=>x.id===id);
+  const levels = ['A1 — Начинающий','A2 — Элементарный','B1 — Средний','B2 — Выше среднего','C1/C2 — Свободно'];
+  openModal(`<div class="modal-title">◎ Язык</div>
+    <div class="modal-row"><label class="modal-label">Язык</label><input class="modal-input" id="m-lang" value="${esc(l.lang)}"></div>
+    <div class="modal-row"><label class="modal-label">Уровень (кружки 1–5)</label>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">
+        ${levels.map((lv,i)=>`
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;">
+            <input type="radio" name="llvl" value="${i+1}" ${l.level===i+1?'checked':''}>
+            <div style="display:flex;gap:3px;">${[1,2,3,4,5].map(x=>`<div style="width:8px;height:8px;border-radius:50%;background:${x<=i+1?'var(--accent)':'#ddd'};"></div>`).join('')}</div>
+            ${lv}
+          </label>`).join('')}
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn" onclick="closeModalBtn()">Отмена</button>
+      <button class="mbtn primary" onclick="saveLang(${id})">Сохранить</button>
+    </div>`);
+}
+function saveLang(id) {
+  saveH();
+  const l = S.data.languages.find(x=>x.id===id);
+  l.lang = document.getElementById('m-lang').value;
+  const r = document.querySelector('input[name="llvl"]:checked');
+  if (r) l.level = +r.value;
+  closeModalBtn(); renderCV(); renderProps();
+}
+function addLang() {
+  const id = uid();
+  S.data.languages.push({id, lang:'Новый язык', level:3});
+  S.data.sections.languages.enabled = true;
+  renderCV(); renderProps();
+  editLang(id);
+}
+
+// CERTIFICATIONS
+function editCert(id) {
+  const c = S.data.certifications.find(x=>x.id===id);
+  openModal(`<div class="modal-title">★ Сертификат</div>
+    <div class="modal-row"><label class="modal-label">Название</label><input class="modal-input" id="m-cn" value="${esc(c.name)}"></div>
+    <div class="modal-row"><label class="modal-label">Выдан (организация)</label><input class="modal-input" id="m-ci" value="${esc(c.issuer)}"></div>
+    <div class="modal-row"><label class="modal-label">Год</label><input class="modal-input" id="m-cy" value="${esc(c.year)}" placeholder="2023"></div>
+    <div class="modal-actions">
+      <button class="mbtn" onclick="closeModalBtn()">Отмена</button>
+      <button class="mbtn primary" onclick="saveCert(${id})">Сохранить</button>
+    </div>`);
+}
+function saveCert(id) {
+  saveH();
+  const c = S.data.certifications.find(x=>x.id===id);
+  c.name = document.getElementById('m-cn').value;
+  c.issuer = document.getElementById('m-ci').value;
+  c.year = document.getElementById('m-cy').value;
+  closeModalBtn(); renderCV(); renderProps();
+}
+function addCert() {
+  const id = uid();
+  S.data.certifications.push({id, name:'Сертификат', issuer:'Организация', year:'2024'});
+  S.data.sections.certifications.enabled = true;
+  renderCV(); renderProps();
+  editCert(id);
+}
+
+// ACHIEVEMENTS
+function editAch(id) {
+  const a = S.data.achievements.find(x=>x.id===id);
+  openModal(`<div class="modal-title">▸ Достижение</div>
+    <div class="modal-row"><label class="modal-label">Описание</label><textarea class="modal-textarea" id="m-at" style="min-height:80px;">${esc(a.text)}</textarea></div>
+    <div class="modal-actions">
+      <button class="mbtn" onclick="closeModalBtn()">Отмена</button>
+      <button class="mbtn primary" onclick="saveAch(${id})">Сохранить</button>
+    </div>`);
+}
+function saveAch(id) {
+  saveH();
+  S.data.achievements.find(x=>x.id===id).text = document.getElementById('m-at').value;
+  closeModalBtn(); renderCV(); renderProps();
+}
+function addAch() {
+  const id = uid();
+  S.data.achievements.push({id, text:'Опишите ваше достижение с конкретным результатом'});
+  S.data.sections.achievements.enabled = true;
+  renderCV(); renderProps();
+  editAch(id);
+}
+
+// PROJECTS
+function editProject(id) {
+  const pr = S.data.projects.find(x=>x.id===id);
+  openModal(`<div class="modal-title">⬡ Проект</div>
+    <div class="modal-row"><label class="modal-label">Название</label><input class="modal-input" id="m-pn" value="${esc(pr.name)}"></div>
+    <div class="modal-row"><label class="modal-label">Описание</label><textarea class="modal-textarea" id="m-pd">${esc(pr.desc)}</textarea></div>
+    <div class="modal-row"><label class="modal-label">Ссылка (URL)</label><input class="modal-input" id="m-pl" value="${esc(pr.link)}" placeholder="https://github.com/..."></div>
+    <div class="modal-row"><label class="modal-label">Теги (через запятую)</label><input class="modal-input" id="m-pt" value="${esc(pr.tags)}"></div>
+    <div class="modal-actions">
+      <button class="mbtn" onclick="closeModalBtn()">Отмена</button>
+      <button class="mbtn primary" onclick="saveProject(${id})">Сохранить</button>
+    </div>`);
+}
+function saveProject(id) {
+  saveH();
+  const pr = S.data.projects.find(x=>x.id===id);
+  pr.name = document.getElementById('m-pn').value;
+  pr.desc = document.getElementById('m-pd').value;
+  pr.link = document.getElementById('m-pl').value;
+  pr.tags = document.getElementById('m-pt').value;
+  closeModalBtn(); renderCV(); renderProps();
+}
+function addProject() {
+  const id = uid();
+  S.data.projects.push({id, name:'Мой проект', desc:'Краткое описание проекта', link:'', tags:''});
+  S.data.sections.projects.enabled = true;
+  renderCV(); renderProps();
+  editProject(id);
+}
+
+// LINKS
+function editLink(id) {
+  const l = S.data.links.find(x=>x.id===id);
+  const iconOpts = ['🔗','⌨','💼','📸','✉','🌐','📱','💬','🎨','📊'];
+  openModal(`<div class="modal-title">🔗 Ссылка / Соцсеть</div>
+    <div class="modal-row"><label class="modal-label">Иконка</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+        ${iconOpts.map(ic=>`<div onclick="this.parentNode.querySelectorAll('div').forEach(x=>x.style.background='');this.style.background='var(--light)';document.getElementById('m-lic').value='${ic}';" style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;background:${l.icon===ic?'var(--light)':''};">${ic}</div>`).join('')}
+      </div>
+      <input type="hidden" id="m-lic" value="${l.icon}">
+    </div>
+    <div class="modal-row"><label class="modal-label">Название</label><input class="modal-input" id="m-ll" value="${esc(l.label)}"></div>
+    <div class="modal-row"><label class="modal-label">URL</label><input class="modal-input" id="m-lu" value="${esc(l.url)}" placeholder="https://..."></div>
+    <div class="modal-actions">
+      <button class="mbtn" onclick="closeModalBtn()">Отмена</button>
+      <button class="mbtn primary" onclick="saveLink(${id})">Сохранить</button>
+    </div>`);
+}
+function saveLink(id) {
+  saveH();
+  const l = S.data.links.find(x=>x.id===id);
+  l.icon = document.getElementById('m-lic').value;
+  l.label = document.getElementById('m-ll').value;
+  l.url = document.getElementById('m-lu').value;
+  closeModalBtn(); renderCV(); renderProps();
+}
+function addLink() {
+  const id = uid();
+  S.data.links.push({id, icon:'🔗', label:'Новая ссылка', url:'https://'});
+  S.data.sections.links.enabled = true;
+  renderCV(); renderProps();
+  editLink(id);
+}
+
+// ================================================================
+// DRAG FROM SIDEBAR TO CANVAS
+// ================================================================
+document.querySelectorAll('.bitem').forEach(item => {
+  item.addEventListener('dragstart', e => e.dataTransfer.setData('block', item.dataset.block));
+});
+const cvp = document.getElementById('cvp');
+cvp.addEventListener('dragover', e => e.preventDefault());
+cvp.addEventListener('drop', e => {
+  e.preventDefault();
+  const block = e.dataTransfer.getData('block');
+  if (!block || !S.data.sections[block]) return;
+  saveH();
+  S.data.sections[block].enabled = true;
+  renderCV(); renderProps();
+  toast('Блок добавлен — перейди в «Секции» для редактирования');
+});
+
+// ================================================================
+// PHOTO UPLOAD
+// ================================================================
+function uploadPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => { saveH(); S.data.photo = ev.target.result; renderCV(); renderProps(); };
+  r.readAsDataURL(file);
+}
+
+// ================================================================
+// EXPORT
+// ================================================================
+function exportPDF() {
+  const p = document.getElementById('cvp');
+  const origTransform = p.style.transform;
+  p.style.transform = 'scale(1)';
+  p.style.marginBottom = '0';
+  html2pdf().set({
+    margin:0, filename:(S.data.name||'cv').replace(/\s/g,'_')+'_CV.pdf',
+    image:{type:'jpeg',quality:0.98},
+    html2canvas:{scale:2,useCORS:true,letterRendering:true},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+  }).from(p).save().then(()=>{
+    setZoom(S.zoom);
+  });
+}
+function exportJSON() {
+  const b = new Blob([JSON.stringify(S.data,null,2)],{type:'application/json'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download='cv-data.json'; a.click();
+}
+function importJSON(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = ev => { try { S.data=JSON.parse(ev.target.result); renderCV(); renderProps(); } catch { toast('Ошибка формата JSON'); } };
+  r.readAsText(file);
+}
+
+// ================================================================
+// TOAST
+// ================================================================
+function toast(msg) {
+  let t = document.getElementById('__toast');
+  if (!t) { t=document.createElement('div'); t.id='__toast'; t.style.cssText='position:fixed;bottom:34px;left:50%;transform:translateX(-50%);background:#1a3c6e;color:white;padding:8px 18px;border-radius:8px;font-size:12px;z-index:999;pointer-events:none;opacity:0;transition:opacity .3s;white-space:nowrap;'; document.body.appendChild(t); }
+  t.textContent = msg; t.style.opacity='1';
+  clearTimeout(t._t); t._t = setTimeout(()=>t.style.opacity='0', 2500);
+}
+
+// ================================================================
+// INIT
+// ================================================================
+buildSwatches();
+try{
+  applyTheme();
+}catch(err){
+  console.error(err);
+}
+try {
+  renderCV();
+} catch(err){
+  console.error(err);
+}
+renderProps();
+setZoom(85);
+</script>
+</body>
+</html>
