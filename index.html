@@ -476,7 +476,7 @@ let S = {
     photo: '',
     about: 'Краткое тестовое описание профиля для демонстрации структуры данных.',
     
-    rightOrder: ['about','experience','education','achievements','projects','custom','divider'],
+    rightOrder: ['about','experience','education','achievements','projects','custom','textblock','signature','divider'],
     leftOrder: ['skills','languages','certifications','links'],
 
     sections: {
@@ -490,6 +490,8 @@ let S = {
       projects: {enabled:false, col:'right'},
       links: {enabled:false, col:'left'},
       custom: {enabled:false, col:'right'},
+      textblock: {enabled:false, col:'right'},
+      signature: {enabled:false, col:'right'},
       divider: {enabled:false, col:'right'},
     },
 
@@ -749,6 +751,13 @@ function renderCV() {
       case 'custom':
         return `<div class="cv-section">${secTitle(d2.custom.title)}
           <p class="cv-about">${d2.custom.text}</p></div>`;
+      case 'textblock':
+        return `<div class="cv-section">${secTitle(d2.textblock.title)}
+          <p class="cv-textblock">${d2.textblock.content}</p></div>`;
+      case 'signature':
+        return d2.signature.image
+          ? `<div class="cv-signature"><img src="${d2.signature.image}" class="cv-sig-img" alt="signature"></div>`
+          : `<div class="cv-signature" style="border-top:1px solid #ddd;margin-top:12px;padding-top:8px;color:#bbb;font-size:10px;font-style:italic;"></div>`;
       case 'divider':
         return `<div style="border-top:1px solid #eee;margin:8px 0;"></div>`;
       default: return '';
@@ -813,7 +822,7 @@ function renderProps() {
   }
 
   else if (S.activeTab === 'sections') {
-    const secNames = {experience:'Опыт работы',education:'Образование',skills:'Навыки',languages:'Языки',certifications:'Сертификаты',achievements:'Достижения',projects:'Проекты',links:'Соц. сети',about:'О себе',custom:'Свободный текст',divider:'Разделитель'};
+    const secNames = {experience:'Опыт работы',education:'Образование',skills:'Навыки',languages:'Языки',certifications:'Сертификаты',achievements:'Достижения',projects:'Проекты',links:'Соц. сети',about:'О себе',custom:'Свободный текст',divider:'Разделитель', signature:"Подпись",textblock:"Текстовый блок"};
 
     // Experience
     pb.innerHTML = `
@@ -935,6 +944,21 @@ function renderProps() {
       <span class="plabel">Свободный текст</span>
       <input class="pinput" value="${esc(d.custom.title)}" oninput="S.data.custom.title=this.value;renderCV();" placeholder="Заголовок" style="margin-bottom:5px;">
       <textarea class="ptextarea" oninput="S.data.custom.text=this.value;renderCV();">${esc(d.custom.text)}</textarea>
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Текстовый блок</span>
+      <input class="pinput" value="${esc(d.textblock.title)}" oninput="S.data.textblock.title=this.value;renderCV();" placeholder="Заголовок блока" style="margin-bottom:5px;">
+      <textarea class="ptextarea" oninput="S.data.textblock.content=this.value;renderCV();" placeholder="Содержание">${esc(d.textblock.content)}</textarea>
+    </div>
+    <div class="pgroup">
+      <span class="plabel">Рукописная подпись</span>
+      ${d.signature.image ? `
+        <div style="margin-bottom:8px;text-align:center;">
+          <img src="${d.signature.image}" style="max-width:100%;max-height:60px;border:1px solid var(--border);border-radius:6px;">
+        </div>
+      ` : ''}
+      <button class="add-btn" onclick="openSignatureModal()">✍ Нарисовать подпись</button>
+      ${d.signature.image ? `<button class="add-btn" style="background:#fee;margin-top:5px;" onclick="saveH();S.data.signature.image='';renderCV();renderProps();">✕ Удалить подпись</button>` : ''}
     </div>
     <div class="pgroup">
       <span class="plabel">Порядок секций (правая колонка)</span>
@@ -1071,6 +1095,102 @@ function closeModal(e) {
   }
 }
 function closeModalBtn() { document.getElementById('modal').style.display = 'none'; }
+
+// ================================================================
+// SIGNATURE MODAL
+// ================================================================
+function openSignatureModal() {
+  openModal(`<div class="modal-title">✍ Рукописная подпись</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Нарисуй свою подпись мышкой (или пальцем на планшете)</div>
+    <div class="sig-canvas-wrap">
+      <canvas id="sig-canvas" class="sig-canvas" width="380" height="100"></canvas>
+      <div class="sig-btns">
+        <button class="sig-btn" onclick="clearSignature()">Очистить</button>
+        <button class="sig-btn primary" onclick="saveSignature()">Сохранить подпись</button>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--muted);">Или загрузи готовое изображение подписи</div>
+    <input type="file" id="sig-file" accept="image/*" style="display:none;" onchange="uploadSignature(event)">
+    <button class="add-btn" style="margin-top:8px;" onclick="document.getElementById('sig-file').click()">📤 Загрузить изображение</button>
+    <div class="modal-actions" style="margin-top:12px;">
+      <button class="mbtn" onclick="closeModalBtn()">Закрыть</button>
+    </div>`);
+  setTimeout(() => initSignatureCanvas(), 100);
+}
+
+function initSignatureCanvas() {
+  const canvas = document.getElementById('sig-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#333';
+  let isDrawing = false;
+
+  canvas.addEventListener('mousedown', e => {
+    isDrawing = true;
+    const rect = canvas.getBoundingClientRect();
+    ctx.beginPath();
+    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+  });
+  canvas.addEventListener('mousemove', e => {
+    if (!isDrawing) return;
+    const rect = canvas.getBoundingClientRect();
+    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.stroke();
+  });
+  canvas.addEventListener('mouseup', () => isDrawing = false);
+  canvas.addEventListener('mouseout', () => isDrawing = false);
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    isDrawing = true;
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    ctx.beginPath();
+    ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+  });
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!isDrawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+    ctx.stroke();
+  });
+  canvas.addEventListener('touchend', () => isDrawing = false);
+}
+
+function clearSignature() {
+  const canvas = document.getElementById('sig-canvas');
+  if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function saveSignature() {
+  const canvas = document.getElementById('sig-canvas');
+  saveH();
+  S.data.signature.image = canvas.toDataURL('image/png');
+  closeModalBtn();
+  renderCV();
+  renderProps();
+  toast('Подпись сохранена');
+}
+
+function uploadSignature(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    saveH();
+    S.data.signature.image = ev.target.result;
+    closeModalBtn();
+    renderCV();
+    renderProps();
+    toast('Подпись загружена');
+  };
+  r.readAsDataURL(file);
+}
 
 // EXPERIENCE
 function editExp(id) {
@@ -1333,7 +1453,12 @@ cvp.addEventListener('drop', e => {
   saveH();
   S.data.sections[block].enabled = true;
   renderCV(); renderProps();
-  toast('Блок добавлен — перейди в «Секции» для редактирования');
+  if (block === 'signature') {
+    switchTab('sections');
+    setTimeout(() => openSignatureModal(), 150);
+  } else {
+    toast('Блок добавлен — перейди в «Секции» для редактирования');
+  }
 });
 
 // ================================================================
